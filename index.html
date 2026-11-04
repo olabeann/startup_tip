@@ -541,6 +541,14 @@ body.has-compare-bar{padding-bottom:calc(245px + env(safe-area-inset-bottom))}
 .catalog .card-index{margin-top:5px}
 .catalog .card-text h3{margin-top:4px;line-height:1.45}
 }
+
+.entry .ledger-help-above summary{margin-left:0;margin-right:auto;text-align:left}
+.entry .ledger-toolbar{justify-content:flex-end}
+@media(max-width:680px){
+.entry .ledger-toolbar{display:block;width:100%}
+.entry .ledger-toolbar .input-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px;margin:0}
+.entry .ledger-toolbar .input-buttons button{width:100%;min-width:0;min-height:44px}
+}
 </style></head><body>
 <header class="topbar"><div class="wrap topbar-in">
   <a href="https://www.instagram.com/startup_tip_/" class="brand" target="_blank" rel="noopener noreferrer" aria-label="startup_tip_ 인스타그램 프로필 (새 탭)"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="24" height="24"><rect x="3" y="3" width="18" height="18" rx="5.5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></span><span class="brand-copy"><span class="brand-caption">INSTAGRAM</span><span class="brand-text"><span class="brand-at">@</span>startup_tip_</span></span></a>
@@ -587,7 +595,7 @@ body.has-compare-bar{padding-bottom:calc(245px + env(safe-area-inset-bottom))}
 <div class="usage-notes"><p>같은 결제는 한 번만 입력하고, 해외 결제·직구는 ‘해외 소비’에 모아 주세요. 현금·계좌이체 금액은 제외해 주세요.</p><p>예상 적립에는 구매처별 추가 적립과 제외 조건이 모두 반영되지 않습니다. 실제 적립은 카드별 조건에 따라 달라집니다.</p><p>기존 저장 금액은 유지됩니다. 항목을 옮길 때는 기존 항목에서 같은 금액을 빼 주세요.</p></div>
 </div></details></div>
       <div class="ledger-toolbar"><div class="input-buttons"><button id="resetButton" class="button button-subtle">예시 불러오기</button><button id="zeroButton" class="button button-subtle">전체 비우기</button></div>
-      <label class="search-input spend-search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7"/><path d="m16 16 5 5"/></svg><input id="inputFilter" type="search" placeholder="항목 검색" aria-label="지출 항목 검색"></label></div>
+      </div>
     <div class="ledger-help"><p>쓰는 항목에 <strong>월평균 카드 결제금액</strong>을 입력해 주세요.</p></div><div class="input-groups" id="inputGroups"></div><details class="optional-picker"><summary>+ 필요한 항목 추가</summary><p>필요한 항목을 누르면 추가되고, 다시 누르면 빠집니다. 해제한 금액은 합계에서 제외되며 다시 추가하면 복원됩니다.</p><div id="optionalCategories" class="optional-buttons"></div></details>
     <div class="question-box"><h3>추가 발급 조건</h3><p>최근 6개월간 하나카드 신용카드로 결제한 적이 있나요?</p><div class="radio-buttons"><button type="button" data-question="O">네, 있어요 (O)</button><button type="button" data-question="X">아니요 (X)</button></div></div>
 
@@ -894,7 +902,7 @@ window.addEventListener('pageshow', event => {
   if (event.persisted) location.reload();
 });
 let question=['O','X'].includes(saved.question)?saved.question:DATA.questionDefault;
-let tab='all',sortBy='net',query='',inputQuery='',showDiscontinued=false;
+let tab='all',sortBy='net',query='',showDiscontinued=false;
 let selected=new Set(),expanded=new Set();
 const $=(id)=>document.getElementById(id);
 const fmt=new Intl.NumberFormat('ko-KR',{maximumFractionDigits:0});
@@ -921,9 +929,9 @@ function renderInputs(force=false){
     for(const g of box.querySelectorAll('[data-group-total]'))g.textContent=won(getGroupTotal(g.dataset.groupTotal));
     return;
   }
-  const search=(inputQuery||'').trim().toLowerCase();
+
   box.innerHTML=groups.map((g,i)=>{
-    const visible=g.items.filter(x=>!search||[g.name,x.label].join(' ').toLowerCase().includes(search));
+    const visible=g.items;
     if(!visible.length)return '';
 
     return `<section class="spend-group tone-${i % 4}">
@@ -992,7 +1000,7 @@ function setupInputs(){
     const button=event.target.closest('[data-add-option]');if(!button)return;
     const option=button.dataset.addOption;
     if(enabledOptions.has(option))enabledOptions.delete(option);else enabledOptions.add(option);
-    inputQuery='';$('inputFilter').value='';
+
     save();renderInputs(true);renderPicker();refresh();
     picker.querySelector('[data-add-option="'+option+'"]').focus({preventScroll:true});
   });
@@ -1017,7 +1025,7 @@ function setupInputs(){
     try{e.target.setSelectionRange(Math.max(0,next+e.target.value.length-oldlen),Math.max(0,next+e.target.value.length-oldlen))}catch(e){}
     save();refresh();
   });
-  $('inputFilter').addEventListener('input',e=>{inputQuery=e.target.value;renderInputs(true);});
+
   document.querySelectorAll('[data-question]').forEach(btn=>btn.addEventListener('click',()=>{question=btn.dataset.question;document.querySelectorAll('[data-question]').forEach(x=>x.classList.toggle('active',x.dataset.question===question));save();refresh();}));
   document.querySelector('[data-question="'+question+'"]').classList.add('active');
   $('resetButton').addEventListener('click',()=>{if(!confirm('입력한 금액을 지우고 예시 금액을 채울까요?'))return;
